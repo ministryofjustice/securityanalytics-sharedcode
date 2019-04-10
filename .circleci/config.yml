@@ -76,9 +76,7 @@ jobs:
       - run:
           name: integration tests
           command: |
-            . ./.venv/bin/activate
-            export AWS_REGION=eu-west-2
-            export PYTHONPATH=`pwd`
+            . .circleci/python_env.sh
             pytest --junitxml=test-reports/junit.xml -m unit tests
       - store_test_results:
           path: test-reports
@@ -91,11 +89,8 @@ jobs:
       - run:
           name: integration tests
           command: |
-            . ./.venv/bin/activate
-            export AWS_REGION=eu-west-2
-            export PYTHONPATH=`pwd`
+            . .circleci/python_env.sh
             # Get short version of git hash for temporary deployment
-            export USERNAME=builder
             export DEPLOY_STAGE=$(expr substr `git rev-parse HEAD` 1 8)
             npx sls --stage=$DEPLOY_STAGE package
 
@@ -108,10 +103,7 @@ jobs:
       - run:
           name: deploy
           command: |
-            . ./.venv/bin/activate
-            export AWS_REGION=eu-west-2
-            export PYTHONPATH=`pwd`
-            export USERNAME=builder
+            . .circleci/python_env.sh
             npx sls --stage=dev deploy
 
 workflows:
