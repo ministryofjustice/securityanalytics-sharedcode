@@ -1,3 +1,5 @@
+[![CircleCI](https://circleci.com/gh/ministryofjustice/securityanalytics-nmapscanner.svg?style=svg)](https://circleci.com/gh/ministryofjustice/securityanalytics-nmapscanner)
+
 # Shared python code
 
 ## json_serialisation
