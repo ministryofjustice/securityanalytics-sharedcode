@@ -1,0 +1,32 @@
+service: ${self:custom.app-name}-${self:custom.plugin-name}
+
+custom:
+  app-name: sec-an
+  plugin-name: shared
+  pythonRequirements:
+    usePipenv: true
+    cacheLocation: ${env:PWD}/.cache
+    useDownloadCache: true
+    useStaticCache: true
+    dockerizePip: non-linux
+    # setting this to true breaks the zip
+    slim: false
+    # Dont use zip, it makes things bigger because the no deploy filtering seems to be ignored
+    zip: false
+
+provider:
+  name: aws
+  runtime: python3.7
+  region: ${opt:region, 'eu-west-2'}
+  stage: ${opt:stage, '${env:USERNAME}'}
+
+package:
+  individually: true
+
+layers:
+  utils:
+    name: ${opt:stage, '${env:USERNAME}'}-${self:service}-utils
+    path: utils
+    package:
+      include:
+        - utils/**

@@ -1,0 +1,15 @@
+{
+  "name": "shared_python",
+  "version": "1.0.0",
+  "description": "NPM only used to install serverless",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ministryofjustice/securityanalytics-sharedinfrastructure.git"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/ministryofjustice/securityanalytics-sharedinfrastructure#readme",
+  "devDependencies": {
+    "serverless": "^1.40.0",
+    "serverless-python-requirements": "^4.3.0"
+  }
+}
