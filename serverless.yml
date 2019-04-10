@@ -30,3 +30,14 @@ layers:
     package:
       include:
         - utils/**
+
+resources:
+  Resources:
+    utilsLayerArnSsmParam:
+      Type: AWS::SSM::Parameter
+      Properties:
+        Description: "Location of shared layer"
+        Name: /${self:custom.app-name}/${opt:stage, '${env:USERNAME}'}/lambda/layer/utils
+        Type: String
+        Value:
+          Ref: UtilsLambdaLayer # Name gets munged by serverless
