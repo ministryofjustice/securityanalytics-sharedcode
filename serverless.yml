@@ -4,6 +4,7 @@ custom:
   app-name: sec-an
   plugin-name: shared
   pythonRequirements:
+    layer: true
     usePipenv: true
     cacheLocation: ${env:PWD}/.cache
     useDownloadCache: true
@@ -26,10 +27,12 @@ package:
 layers:
   utils:
     name: ${opt:stage, '${env:USERNAME}'}-${self:service}-utils
-    path: utils
+    compatibleRuntimes:
+      - python3.7
+    path: .
     package:
       include:
-        - utils/**
+        - python/utils/**
 
 resources:
   Resources:
