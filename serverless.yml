@@ -26,7 +26,7 @@ package:
 layers:
   utils:
     name: ${opt:stage, '${env:USERNAME}'}-${self:service}-utils
-    path: utils
+    path: .
     package:
       include:
         - utils/**
