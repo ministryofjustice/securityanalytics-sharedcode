@@ -1,4 +1,5 @@
 from functools import wraps
+import traceback
 
 
 def ssm_parameters(ssm_client, *param_names):
@@ -12,7 +13,7 @@ def ssm_parameters(ssm_client, *param_names):
     return decorator
 
 
-def suppress_exceptions(return_val):
+def suppress_exceptions(return_function):
     def decorator(handler):
         @wraps(handler)
         def wrapper(event, context):
@@ -20,6 +21,7 @@ def suppress_exceptions(return_val):
                 return handler(event, context)
             except Exception as e:
                 print(e)
-                return return_val
+                traceback.print_exc(e)
+                return return_function(e)
         return wrapper
     return decorator
