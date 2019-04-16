@@ -16,8 +16,6 @@ def test_can_serialise_mock_with_decorator():
     assert isinstance(dumps(mock.MagicMock()), str)
 
 
-
-
 @pytest.mark.unit
 def test_fail_two_tests_without_resetting():
     shared_mock = mock.MagicMock()
