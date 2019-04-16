@@ -30,3 +30,22 @@ def test_ssm_params():
 
     foo({}, None)
     assert called
+
+
+@pytest.mark.unit
+def test_suppress_exceptions_throw_exceptional_return():
+    @lambda_decorators.suppress_exceptions(Exception('Rethrow'))
+    def foo(event, _):
+        raise Exception('Original')
+
+    with pytest.raises(Exception, match="Rethrow"):
+        foo({}, None)
+
+
+@pytest.mark.unit
+def test_suppress_exceptions_return_value():
+    @lambda_decorators.suppress_exceptions(5)
+    def foo(event, _):
+        raise Exception('Original')
+
+    assert foo({}, None) == 5

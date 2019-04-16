@@ -15,7 +15,7 @@ def ssm_parameters(ssm_client, *param_names):
     return decorator
 
 
-def suppress_exceptions(return_function):
+def suppress_exceptions(return_value):
     def decorator(handler):
         @wraps(handler)
         def wrapper(event, context):
@@ -23,7 +23,10 @@ def suppress_exceptions(return_function):
                 return handler(event, context)
             except Exception as e:
                 print(e)
-                traceback.print_exc(e)
-                return return_function(e)
+                traceback.print_exc()
+                if isinstance(return_value, Exception):
+                    raise return_value from None
+                else:
+                    return return_value
         return wrapper
     return decorator
