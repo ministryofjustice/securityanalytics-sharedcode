@@ -8,7 +8,7 @@ def resetting_mocks(*mocks):
         def wrapper():
             handler()
             for mock in mocks:
-                mock.reset_mock()
+                mock.reset_mock(return_value=True, side_effect=True)
         return wrapper
     return decorator
 
