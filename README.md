@@ -1,4 +1,4 @@
-[![CircleCI](https://circleci.com/gh/ministryofjustice/securityanalytics-nmapscanner.svg?style=svg)](https://circleci.com/gh/ministryofjustice/securityanalytics-nmapscanner)
+[![CircleCI](https://circleci.com/gh/ministryofjustice/securityanalytics-sharedcode.svg?style=svg)](https://circleci.com/gh/ministryofjustice/securityanalytics-sharedcode)
 
 # Shared python code
 
