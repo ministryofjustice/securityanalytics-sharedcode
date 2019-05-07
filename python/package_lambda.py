@@ -5,14 +5,32 @@ import hashlib
 import argparse
 from pathlib import Path
 
-
 parser = argparse.ArgumentParser()
 parser.add_argument("output", help="file to output")
+parser.add_argument(
+    "-x",
+    "--exclude_common",
+    help="Toggle excluding common deps e.g. boto3 that need not be packaged",
+    default=True,
+    type=bool)
 parser.add_argument("base_dir", help="base directory to run the packaging in", default=["."], nargs="*")
 parser.add_argument("-e", "--exclude", help="a pattern to exclude from packaging", action="append", default=[])
 
+COMMON_EXCLUDES = [
+    "boto3",
+    "botocore",
+    "docutils",
+    "jmespath",
+    "python-dateutil",
+    "s3transfer",
+    "six",
+    "pip",
+    "setuptools"
+]
+
 args = parser.parse_args()
-exclude = [re.compile(i) for i in args.exclude]
+exclude = args.exclude + COMMON_EXCLUDES if args.exclude_common else args.exclude
+exclude = [re.compile(i) for i in exclude]
 base_dirs = map(lambda p: Path(p).resolve(), args.base_dir)
 home = os.getcwd()
 
@@ -30,7 +48,7 @@ with open(f"{args.output}.log", "w") as log:
                     sub_folders.clear()
                 else:
                     for file_name in file_names:
-                        file = os.path.join(folder,file_name)
+                        file = os.path.join(folder, file_name)
                         if any((re.search(x, file) for x in exclude)):
                             print(f"Ignoring file {file}", file=log)
                         else:
