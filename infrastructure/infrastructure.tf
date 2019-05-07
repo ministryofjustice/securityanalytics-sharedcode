@@ -7,7 +7,7 @@ terraform {
     bucket         = "sec-an-terraform-state"
     dynamodb_table = "sec-an-terraform-locks"
     key            = "shared_code/terraform.tfstate"
-    region         = "eu-west-2"              # london
+    region         = "eu-west-2"                     # london
     profile        = "sec-an"
   }
 }
@@ -51,6 +51,7 @@ locals {
   # When the circle ci build is run we override the var.ssm_source_stage to explicitly tell it
   # to use the resources in dev. Change
   ssm_source_stage = "${var.ssm_source_stage == "DEFAULT" ? terraform.workspace : var.ssm_source_stage}"
+
   utils_zip = "../.generated/utils.zip"
 }
 
@@ -59,8 +60,8 @@ data "external" "utils_zip" {
 }
 
 resource "aws_lambda_layer_version" "lambda_layer" {
-  description = "Utils layer with hash ${data.external.utils_zip.result.hash}"
-  filename="${local.utils_zip}"
-  layer_name="utils"
-  compatible_runtimes=["python3.7"]
+  description         = "Utils layer with hash ${data.external.utils_zip.result.hash}"
+  filename            = "${local.utils_zip}"
+  layer_name          = "utils"
+  compatible_runtimes = ["python3.7"]
 }
