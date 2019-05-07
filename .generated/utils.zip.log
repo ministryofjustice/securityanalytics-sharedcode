@@ -1,0 +1,10 @@
+Adding file to zip python\package_lambda.py
+Adding file to zip python\__init__.py
+Ignoring all files in folder python\test_utils
+Adding file to zip python\utils\json_serialisation.py
+Adding file to zip python\utils\lambda_decorators.py
+Adding file to zip python\utils\objectify_dict.py
+Adding file to zip python\utils\__init__.py
+Adding file to zip python\utils\__pycache__\json_serialisation.cpython-37.pyc
+Adding file to zip python\utils\__pycache__\lambda_decorators.cpython-37.pyc
+Adding file to zip python\utils\__pycache__\__init__.cpython-37.pyc
