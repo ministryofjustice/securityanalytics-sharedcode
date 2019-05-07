@@ -18,14 +18,19 @@ var/
 __pycache__
 .venv
 
-# javascript ignores
-node_modules
-
-# Serverless directories
-.serverless
 
 # other . dirs
 .cache
-.requirements.zip
 .pytest_cache
 .generated
+.terraform
+
+# .tfstate files
+*.tfstate
+*.tfstate.*
+
+# .tfvars files
+*auto.tfvars
+terraform.tfvars
+
+test-reports
