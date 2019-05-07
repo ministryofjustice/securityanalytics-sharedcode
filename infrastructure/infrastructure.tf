@@ -62,6 +62,6 @@ data "external" "utils_zip" {
 resource "aws_lambda_layer_version" "lambda_layer" {
   description         = "Utils layer with hash ${data.external.utils_zip.result.hash}"
   filename            = "${local.utils_zip}"
-  layer_name          = "${terraform.workspace}-${var.app_name}-shared-utils-zoo"
+  layer_name          = "${terraform.workspace}-${var.app_name}-shared-utils"
   compatible_runtimes = ["python3.7"]
 }
