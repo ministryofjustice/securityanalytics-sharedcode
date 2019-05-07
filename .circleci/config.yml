@@ -23,13 +23,6 @@ jobs:
 
       - restore_cache:
           keys:
-            - npm-v1-{{ .Branch }}-
-            - npm-v1-
-
-      - run: npm install
-
-      - restore_cache:
-          keys:
             - python-v1-{{ .Branch }}-
             - python-v1-
 
@@ -42,6 +35,19 @@ jobs:
               mkdir test-reports
             fi
 
+      - run:
+          name: terraform
+          command: |
+            . .circleci/python_env.sh
+            cd infrastructure
+            terraform init
+            terraform get --update
+            terraform workspace new $SSM_SOURCE_STAGE || terraform workspace select $SSM_SOURCE_STAGE
+            echo checking formatting
+            terraform fmt -check=true
+            echo making the plan
+            terraform plan -var ssm_source_stage=$SSM_SOURCE_STAGE -var account_id=$ACCOUNT_ID -no-color -out=plan.file > terraform.plan
+
       - persist_to_workspace:
           root: .
           paths:
@@ -50,22 +56,27 @@ jobs:
       - store_artifacts:
           path: .generated
 
+      - store_artifacts:
+          path: infrastructure/plan.file
+
+      - store_artifacts:
+          path: infrastructure/terraform.plan
+
+      - persist_to_workspace:
+          root: .
+          paths:
+            - "*"
+
       - save_cache:
           key: git-v1-{{ .Branch }}-{{ .Revision }}
           paths:
             - ".git"
 
       - save_cache:
-          key: npm-v1-{{ .Branch }}-{{ .Revision }}
-          paths:
-            - "node_modules"
-
-      - save_cache:
           key: python-v1-{{ .Branch }}-{{ .Revision }}
           paths:
             - ".venv"
-            - ".cache"
-            - ".serverless"
+            - ".generated"
             - ".pytest_cache"
 
   unit-test:
@@ -81,19 +92,6 @@ jobs:
       - store_test_results:
           path: test-reports
 
-  package-test:
-    executor: builder
-    steps:
-      - attach_workspace:
-          at: .
-      - run:
-          name: integration tests
-          command: |
-            . .circleci/python_env.sh
-            # Get short version of git hash for temporary deployment
-            export DEPLOY_STAGE=$(expr substr `git rev-parse HEAD` 1 8)
-            npx sls --stage=$DEPLOY_STAGE package
-
   deploy:
     executor: builder
     steps:
@@ -103,8 +101,10 @@ jobs:
       - run:
           name: deploy
           command: |
-            . .circleci/python_env.sh
-            npx sls --stage=dev deploy
+            . .circleci/env.sh
+            cd infrastructure
+            terraform workspace new dev || terraform workspace select dev
+            terraform apply plan.file
 
 workflows:
   version: 2
@@ -113,13 +113,10 @@ workflows:
       - setup
       - unit-test:
           requires: [ setup ]
-      - package-test:
-          requires: [ setup ]
       - approve:
           type: approval
           requires:
             - unit-test
-            - package-test
           <<: *master-only
       - deploy:
           requires: [ approve ]
