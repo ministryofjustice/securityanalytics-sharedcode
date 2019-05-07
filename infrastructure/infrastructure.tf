@@ -56,12 +56,12 @@ locals {
 }
 
 data "external" "utils_zip" {
-  program = ["python", "../python/package_lambda.py", "-e", "test", "${local.utils_zip}", "../python"]
+  program = ["python", "../python/package_lambda.py", "${local.utils_zip}", "packaging.config.json",  "../Pipfile.lock"]
 }
 
 resource "aws_lambda_layer_version" "lambda_layer" {
   description         = "Utils layer with hash ${data.external.utils_zip.result.hash}"
   filename            = "${local.utils_zip}"
-  layer_name          = "utils"
+  layer_name          = "${terraform.workspace}-${var.app_name}-shared-utils-zoo"
   compatible_runtimes = ["python3.7"]
 }
