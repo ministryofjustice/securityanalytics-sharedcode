@@ -16,6 +16,10 @@ exclude = [re.compile(i) for i in args.exclude]
 base_dirs = map(lambda p: Path(p).resolve(), args.base_dir)
 home = os.getcwd()
 
+parent_dir = Path(args.output).parent
+if not parent_dir.exists():
+    os.makedirs(parent_dir)
+
 with open(f"{args.output}.log", "w") as log:
     with ZipFile(args.output, "w") as zip_file:
         for base_dir in base_dirs:
