@@ -1,0 +1,11 @@
+{
+  "base_dirs": [
+    {
+      "dir": "../python",
+      "base_in_zip": "python"
+    }
+  ],
+  "excludes": [
+    "test"
+  ]
+}
