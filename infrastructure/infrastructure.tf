@@ -56,7 +56,7 @@ locals {
 }
 
 data "external" "utils_zip" {
-  program = ["python", "../python/package_lambda.py", "${local.utils_zip}", "packaging.config.json",  "../Pipfile.lock"]
+  program = ["python", "../python/package_lambda.py", "${local.utils_zip}", "packaging.config.json", "../Pipfile.lock"]
 }
 
 resource "aws_lambda_layer_version" "lambda_layer" {
