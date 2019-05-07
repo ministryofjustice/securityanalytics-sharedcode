@@ -1,5 +1,6 @@
 from zipfile import ZipFile, ZIP_DEFLATED
 import os
+import sys
 import re
 import hashlib
 import argparse
@@ -41,7 +42,12 @@ with open(args.config_file, "r") as config_file, open(args.pipenv_lock, "r") as 
     pipenv_excludes = set(pipenv_json["develop"].keys()) - set(pipenv_json["default"].keys())
     pipenv_excludes = with_dist_info(pipenv_excludes)
     config = json.load(config_file)
-    base_dirs = config["base_dirs"]
+
+    if sys.platform != "win32":
+        base_dirs = [x.replace(".venv/Lib/site-packages", ".venv/lib/python3.7/site-packages") for x in config["base_dirs"]]
+    else:
+        base_dirs = config["base_dirs"]
+
     exclude = config["excludes"]
 
     if args.exclude_common:
