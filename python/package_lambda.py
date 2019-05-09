@@ -90,7 +90,7 @@ with open(args.config_file, "r") as config_file, open(args.pipenv_lock, "r") as 
     os.chdir(home)
 
     hasher = hashlib.md5()
-    with open(f"{args.output}.log", "rb") as zipped_file:
+    with open(f"{args.output}", "rb") as zipped_file:
         buf = zipped_file.read()
         hasher.update(buf)
 
