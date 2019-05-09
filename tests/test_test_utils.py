@@ -49,3 +49,22 @@ def test_pass_two_tests_with_resetting():
 
     one()
     two()
+
+
+@pytest.mark.unit
+def test_reset_despite_excpetion():
+    shared_mock = mock.MagicMock()
+
+    @resetting_mocks(shared_mock)
+    def one():
+        shared_mock()
+        raise Exception()
+
+    @resetting_mocks(shared_mock)
+    def two():
+        shared_mock()
+        shared_mock.assert_called_once()
+
+    with pytest.raises(Exception):
+        one()
+    two()
