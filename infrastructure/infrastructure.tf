@@ -4,7 +4,8 @@
 
 terraform {
   backend "s3" {
-    bucket         = "sec-an-terraform-state"
+    # This is configured using the -backend-config parameter with 'terraform init'
+    bucket         = ""
     dynamodb_table = "sec-an-terraform-locks"
     key            = "shared_code/terraform.tfstate"
     region         = "eu-west-2"                     # london
@@ -20,9 +21,8 @@ variable "aws_region" {
   default = "eu-west-2" # london
 }
 
-variable "app_name" {
-  default = "sec-an"
-}
+# Set this variable with your app.auto.tfvars file or enter it manually when prompted
+variable "app_name" {}
 
 variable "account_id" {}
 
