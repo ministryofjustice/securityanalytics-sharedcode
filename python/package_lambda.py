@@ -6,6 +6,7 @@ import hashlib
 import argparse
 import json
 from pathlib import Path
+import base64
 
 parser = argparse.ArgumentParser()
 parser.add_argument("output", help="file to output")
@@ -89,9 +90,9 @@ with open(args.config_file, "r") as config_file, open(args.pipenv_lock, "r") as 
 
     os.chdir(home)
 
-    hasher = hashlib.md5()
+    hasher = hashlib.sha256()
     with open(f"{args.output}", "rb") as zipped_file:
         buf = zipped_file.read()
         hasher.update(buf)
 
-    print(f"{{\"status\":\"ok\", \"hash\": \"{hasher.hexdigest()}\"}}")
+    print(f"{{\"status\":\"ok\", \"hash\": \"{base64.b64encode(hasher.digest()).decode('UTF-8')}\"}}")
