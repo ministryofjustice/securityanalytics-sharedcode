@@ -36,7 +36,8 @@ variable "known_deployment_stages" {
 }
 
 provider "aws" {
-  region              = "${var.aws_region}"
+  region = "${var.aws_region}"
+
   # profile set in env variables to support MFA
   # profile = "${var.app_name}"
   allowed_account_ids = ["${var.account_id}"]
