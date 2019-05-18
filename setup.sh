@@ -9,6 +9,6 @@ fi
 
 export PIPENV_VENV_IN_PROJECT=true
 pipenv install --dev
-pipenv run pipenv.sh $1 $2
+pipenv run ./pipenv.sh $1 $2
 
 wait
