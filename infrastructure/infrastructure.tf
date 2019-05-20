@@ -37,6 +37,7 @@ variable "known_deployment_stages" {
 
 provider "aws" {
   region = "${var.aws_region}"
+
   # N.B. To support all authentication use cases, we expect the local environment variables to provide auth details.
   allowed_account_ids = ["${var.account_id}"]
 }
