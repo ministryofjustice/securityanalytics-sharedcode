@@ -1,5 +1,6 @@
 from functools import wraps
 import traceback
+import asyncio
 from utils.json_serialisation import dumps
 
 
@@ -30,3 +31,11 @@ def suppress_exceptions(return_value):
                     return return_value
         return wrapper
     return decorator
+
+
+def async_handler(handler):
+    @wraps(handler)
+    def wrapper(event, context):
+        context.loop = asyncio.get_event_loop()
+        return context.loop.run_until_complete(handler(event, context))
+    return wrapper
