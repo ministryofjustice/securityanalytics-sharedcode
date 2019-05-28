@@ -12,10 +12,9 @@ parser = argparse.ArgumentParser()
 parser.add_argument("output", help="file to output")
 parser.add_argument(
     "-x",
-    "--exclude_common",
+    "--exclude_common_ignores",
     help="Toggle excluding common deps e.g. boto3 that need not be packaged",
-    default=True,
-    type=bool)
+    action="store_true")
 parser.add_argument("config_file", help="Config for packaging")
 parser.add_argument("pipenv_lock", help="Pipenv lock file to exclude dev deps")
 
@@ -46,8 +45,9 @@ with open(args.config_file, "r") as config_file, open(args.pipenv_lock, "r") as 
     base_dirs = config["base_dirs"]
     exclude = config["excludes"]
 
-    if args.exclude_common:
-        exclude = exclude + with_dist_info(COMMON_EXCLUDES)
+    if not args.exclude_common_ignores:
+        exclude = exclude + COMMON_EXCLUDES
+    exclude = with_dist_info(exclude)
 
     exclude = [re.compile(i) for i in exclude]
     home = os.getcwd()
