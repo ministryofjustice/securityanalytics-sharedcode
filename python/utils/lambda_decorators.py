@@ -1,6 +1,7 @@
 from functools import wraps
 import traceback
 import asyncio
+import json
 from utils.json_serialisation import dumps
 
 
@@ -38,4 +39,30 @@ def async_handler(handler):
     def wrapper(event, context):
         context.loop = asyncio.get_event_loop()
         return context.loop.run_until_complete(handler(event, context))
+    return wrapper
+
+
+def dump_json_body(handler):
+    @wraps(handler)
+    def wrapper(event, context):
+        response = handler(event, context)
+        if 'body' in response:
+            try:
+                response['body'] = dumps(response['body'])
+            except Exception as exception:
+                return {'statusCode': 500, 'body': str(exception)}
+        return response
+    return wrapper
+
+
+def load_json_body(handler):
+    @wraps(handler)
+    def wrapper(event, context):
+        if isinstance(event.get('body'), str):
+            try:
+                event['body'] = json.loads(event['body'])
+            except:
+                return {'statusCode': 400, 'body': 'BAD REQUEST'}
+        return handler(event, context)
+
     return wrapper
