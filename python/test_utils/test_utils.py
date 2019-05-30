@@ -1,5 +1,6 @@
 from functools import wraps
 from utils import json_serialisation
+from asyncio import Future
 
 
 def resetting_mocks(*mocks):
@@ -25,3 +26,15 @@ def serialise_mocks():
             json_serialisation.stringify_all = old_val
         return wrapper
     return decorator
+
+
+def future_of(value):
+    future = Future()
+    future.set_result(value)
+    return future
+
+
+def future_exception(exception):
+    future = Future()
+    future.set_exception(exception)
+    return future
