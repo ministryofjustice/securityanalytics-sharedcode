@@ -1,0 +1,25 @@
+{
+  "base_dirs": [
+    {
+      "dir": "../python/aws_messaging_glue",
+      "base_in_zip": "python/aws_messaging_glue"
+    },
+    {
+      "dir": "../.venv/Lib/site-packages",
+      "base_in_zip": "python",
+      "exclude_dev_deps": true
+    }
+  ],
+  "excludes": [
+    "test_utils",
+    "utils",
+    "package_lambda.py",
+    "docutils",
+    "jmespath",
+    "python-dateutil",
+    "s3transfer",
+    "six",
+    "pip",
+    "setuptools"
+  ]
+}

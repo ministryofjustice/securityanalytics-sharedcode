@@ -7,18 +7,21 @@ from unittest.mock import MagicMock
 def test_ssm_params():
     called = False
     ssm_mock = MagicMock()
-    ssm_mock.get_parameters.return_value = {
-        'Parameters':
-        [
-            {
-                "Name": "/sec-an/mamos/ecs/cluster",
-                "Type": "StringList",
-                "Value": "arn:aws:ecs:eu-west-2:447213725459:cluster/mamos-sec-an-scanning-cluster",
-                "Version": 1,
-                "LastModifiedDate": "2019-04-08T13:01:12.317000+00:00",
-                "ARN": "arn:aws:ssm:eu-west-2:447213725459:parameter/sec-an/mamos/ecs/cluster"}
-        ]
-    }
+
+    async def get_parameters():
+        return {
+            'Parameters':
+            [
+                {
+                    "Name": "/sec-an/mamos/ecs/cluster",
+                    "Type": "StringList",
+                    "Value": "arn:aws:ecs:eu-west-2:447213725459:cluster/mamos-sec-an-scanning-cluster",
+                    "Version": 1,
+                    "LastModifiedDate": "2019-04-08T13:01:12.317000+00:00",
+                    "ARN": "arn:aws:ssm:eu-west-2:447213725459:parameter/sec-an/mamos/ecs/cluster"}
+            ]
+        }
+    ssm_mock.get_parameters.return_value = get_parameters()
 
     @lambda_decorators.ssm_parameters(ssm_mock, "/param/name")
     def foo(event, _):
