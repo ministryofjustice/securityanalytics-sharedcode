@@ -6,6 +6,7 @@
     }
   ],
   "excludes": [
-    "test"
+    "test_utils",
+    "aws_messaging_glue"
   ]
 }
