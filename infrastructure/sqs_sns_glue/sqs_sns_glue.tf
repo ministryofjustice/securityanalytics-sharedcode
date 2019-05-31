@@ -1,22 +1,22 @@
 resource "aws_lambda_function" "sqs_sns_glue" {
-  function_name = "${terraform.workspace}-${var.app_name}-${var.glue_name}"
-  handler = "aws_messaging_glue.sqs_sns_glue.forward_messages"
-  role = "${aws_iam_role.sqs_sns_glue.arn}"
-  runtime = "python3.7"
+  function_name    = "${terraform.workspace}-${var.app_name}-${var.glue_name}"
+  handler          = "aws_messaging_glue.sqs_sns_glue.forward_messages"
+  role             = "${aws_iam_role.sqs_sns_glue.arn}"
+  runtime          = "python3.7"
   filename         = "${path.module}/empty.zip"
   source_code_hash = "${base64sha256(file("${path.module}/empty.zip"))}"
 
   layers = [
     "${data.aws_ssm_parameter.utils_layer.value}",
-    "${data.aws_ssm_parameter.msg_glue_layer.value}"
+    "${data.aws_ssm_parameter.msg_glue_layer.value}",
   ]
 
   environment {
     variables = {
-      REGION    = "${var.aws_region}"
-      STAGE     = "${terraform.workspace}"
-      APP_NAME  = "${var.app_name}"
-      TOPIC     = "${var.sns_topic_arn}"
+      REGION   = "${var.aws_region}"
+      STAGE    = "${terraform.workspace}"
+      APP_NAME = "${var.app_name}"
+      TOPIC    = "${var.sns_topic_arn}"
     }
   }
 
@@ -74,7 +74,7 @@ data "aws_iam_policy_document" "sqs_sns_glue_perms" {
     actions = [
       "sqs:DeleteMessage",
       "sqs:ReceiveMessage",
-      "sqs:GetQueueAttributes"
+      "sqs:GetQueueAttributes",
     ]
 
     resources = ["${var.sqs_queue_arn}"]
