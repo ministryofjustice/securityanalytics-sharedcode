@@ -1,27 +1,28 @@
 variable "aws_region" {
-  type = "string"
+  type = string
 }
 
 variable "app_name" {
-  type = "string"
+  type = string
 }
 
 variable "account_id" {
-  type = "string"
+  type = string
 }
 
 variable "ssm_source_stage" {
-  type = "string"
+  type = string
 }
 
 variable "glue_name" {
-  type = "string"
+  type = string
 }
 
 variable "sqs_queue_arn" {
-  type = "string"
+  type = string
 }
 
 variable "sns_topic_arn" {
-  type = "string"
+  type = string
 }
+
