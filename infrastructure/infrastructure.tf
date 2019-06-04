@@ -56,6 +56,7 @@ locals {
 
   utils_zip    = "../.generated/${var.app_name}_utils.zip"
   msg_glue_zip = "../.generated/${var.app_name}_msg_glue.zip"
+  dlq_recorder_zip = "../.generated/${var.app_name}_dlq_recorder.zip"
 }
 
 data "external" "utils_zip" {
@@ -64,6 +65,10 @@ data "external" "utils_zip" {
 
 data "external" "msg_glue_zip" {
   program = ["python", "../python/package_lambda.py", "-x", local.msg_glue_zip, "msg_glue.packaging.config.json", "../Pipfile.lock"]
+}
+
+data "external" "dlq_recorder_zip" {
+  program = ["python", "../python/package_lambda.py", "-x", local.dlq_recorder_zip, "dlq_recorder.packaging.config.json", "../Pipfile.lock"]
 }
 
 resource "aws_lambda_layer_version" "utils_layer" {
@@ -80,3 +85,9 @@ resource "aws_lambda_layer_version" "msg_glue_layer" {
   compatible_runtimes = ["python3.7"]
 }
 
+resource "aws_lambda_layer_version" "dlq_recorder_layer" {
+  description         = "Dead letter queue recorder ${data.external.dlq_recorder_zip.result.hash}"
+  filename            = local.dlq_recorder_zip
+  layer_name          = "${terraform.workspace}-${var.app_name}-dlq-recorder"
+  compatible_runtimes = ["python3.7"]
+}
