@@ -3,6 +3,11 @@ import aioboto3
 from utils.lambda_decorators import async_handler
 from asyncio import gather, run
 from collections import namedtuple
+from utils.tracing import create_trace_recorder
+
+# Enable xray tracing
+xray_recorder = create_trace_recorder()
+
 
 region = os.environ["REGION"]
 stage = os.environ["STAGE"]
