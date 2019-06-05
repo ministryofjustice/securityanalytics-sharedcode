@@ -18,6 +18,9 @@ resource "aws_lambda_function" "dlq_recorder" {
   environment {
     variables = {
       REGION   = var.aws_region
+      STAGE    = terraform.workspace
+      APP_NAME = var.app_name
+      DLQ_NAME = var.recorder_name
       S3_BUCKET    = var.s3_bucket
       S3_KEY_PREFIX = var.s3_key_prefix
     }

@@ -2,7 +2,8 @@ import os
 import io
 import aioboto3
 import time
-from utils.lambda_decorators import async_handler
+from utils.json_serialisation import dumps
+from utils.lambda_decorators import async_handler, ssm_parameters
 import tarfile
 from collections import namedtuple
 from asyncio import run, gather
@@ -10,14 +11,28 @@ from aws_xray_sdk.core.lambda_launcher import LambdaContext
 from aws_xray_sdk.core import xray_recorder
 
 region = os.environ["REGION"]
+stage = os.environ["STAGE"]
+app_name = os.environ["APP_NAME"]
 bucket = os.environ["S3_BUCKET"]
 prefix = os.environ["S3_KEY_PREFIX"]
+dlq_name = os.environ["DLQ_NAME"]
 
+ssm_client = aioboto3.client("ssm", region_name=region)
 s3_client = aioboto3.client("s3", region_name=region)
+sqs_client = aioboto3.client("sqs", region_name=region)
 
 
+ssm_prefix = f"/{app_name}/{stage}"
+ES_SQS = f"{ssm_prefix}/analytics/elastic/ingest_queue/id"
+
+
+@ssm_parameters(
+    ssm_client,
+    ES_SQS
+)
 @async_handler(xray=True)
 async def save_dead_letter(event, _):
+    es_queue = event['ssm_params'][ES_SQS]
     writes = []
     for record in event["Records"]:
         meta_data = {}
@@ -36,17 +51,34 @@ async def save_dead_letter(event, _):
         meta_data.update(attrs)
 
         archive_bytes = _create_archive_bytes(record)
+        dead_message_key = f"{prefix}/{msg_id}-{sent_time}.tar.gz"
+
+        elastic_stats = {}
+        elastic_stats.update(meta_data)
+        elastic_stats["DeadMessageBucket"] = bucket
+        elastic_stats["DeadMessageKey"] = dead_message_key
+        elastic_key = {
+            "NonTemporalKey": msg_id,
+            # TODO rename scan end time in elastic ingestor to more general name
+            "ScanEndTime": sent_time
+        }
 
         print(f"Dumping failed event {msg_id}")
 
-        writes.append(
+        writes += [
             s3_client.put_object(
                 Body=archive_bytes,
                 Bucket=bucket,
-                Key=f"{prefix}/{msg_id}-{sent_time}.tar.gz",
+                Key=dead_message_key,
                 Metadata=meta_data
+            ),
+            sqs_client.send_message(
+                QueueUrl=es_queue,
+                Subject=f"dead_letters:{dlq_name}",
+                MessageBody=dumps(elastic_stats),
+                MessageAttributes=elastic_key
             )
-        )
+        ]
     await gather(*writes)
 
 
