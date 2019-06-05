@@ -14,7 +14,7 @@ ssm_client = aioboto3.client("ssm", region_name=region)
 sns_client = aioboto3.client("sns", region_name=region)
 
 
-@async_handler
+@async_handler()
 async def forward_messages(event, _):
     coros = []
     for record in event["Records"]:
