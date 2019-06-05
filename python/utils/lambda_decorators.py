@@ -39,7 +39,7 @@ def suppress_exceptions(return_value):
     return decorator
 
 
-def async_handler(xray=False):
+def async_handler():
     def decorator(handler):
         # It is a little hard to get lambdas, asyncio, and xray all working together
         # asyncio + xray => we have to configure the recorder to use the async context.
@@ -68,7 +68,8 @@ def async_handler(xray=False):
         def wrapper(event, context):
             context.loop = get_event_loop()
             invoke = handler(event, context)
-            if xray:
+            # Terraform true and false are 0/1
+            if bool(int(os.environ["USE_XRAY"])):
                 from aws_xray_sdk.core import patch_all
                 patch_all()
                 invoke = set_context(invoke)
