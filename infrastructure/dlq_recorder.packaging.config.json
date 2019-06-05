@@ -1,8 +1,8 @@
 {
   "base_dirs": [
     {
-      "dir": "../python",
-      "base_in_zip": "python"
+      "dir": "../python/dlq_recorder",
+      "base_in_zip": "python/dlq_recorder"
     },
     {
       "dir": "../.venv/Lib/site-packages",
@@ -12,8 +12,7 @@
   ],
   "excludes": [
     "test_utils",
-    "aws_messaging_glue",
-    "dlq_recorder",
+    "utils",
     "package_lambda.py",
     "docutils",
     "jmespath",

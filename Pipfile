@@ -4,6 +4,7 @@ setuptools = "*"
 
 [packages]
 aioboto3="*"
+aws-xray-sdk = "*"
 
 [requires]
 python_version = "3.7"

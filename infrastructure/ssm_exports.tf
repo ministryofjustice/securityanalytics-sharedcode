@@ -24,3 +24,15 @@ resource "aws_ssm_parameter" "msg_glue_layer" {
   }
 }
 
+resource "aws_ssm_parameter" "dlq_recorder_layer" {
+  name        = "/${var.app_name}/${terraform.workspace}/lambda/layers/dlq_recorder/arn"
+  description = "The arn of the dlq recorder lambda layer"
+  type        = "String"
+  value       = aws_lambda_layer_version.dlq_recorder_layer.arn
+  overwrite   = "true"
+
+  tags = {
+    app_name  = var.app_name
+    workspace = terraform.workspace
+  }
+}
