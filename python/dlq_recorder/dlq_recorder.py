@@ -1,44 +1,50 @@
 import os
 import io
 import aioboto3
+import time
 from utils.lambda_decorators import async_handler
-from utils.tracing import create_trace_recorder
 import tarfile
 from collections import namedtuple
 from asyncio import run, gather
+from aws_xray_sdk.core.lambda_launcher import LambdaContext
+from aws_xray_sdk.core import xray_recorder
 
 region = os.environ["REGION"]
 bucket = os.environ["S3_BUCKET"]
 prefix = os.environ["S3_KEY_PREFIX"]
-service_name = os.environ["SERVICE_NAME"]
-
-# Enable xray tracing
-#xray_recorder = create_trace_recorder(service_name)
 
 s3_client = aioboto3.client("s3", region_name=region)
 
 
-@async_handler
+@async_handler(xray=True)
 async def save_dead_letter(event, _):
-    print(f"Dumping event {event}")
     writes = []
     for record in event["Records"]:
-        msg_attrs = record['messageAttributes']
-        original_req_id = msg_attrs['RequestID']
-        print(f"Dumping record {record} - {original_req_id}")
+        meta_data = {}
+        attrs = record["attributes"]
+        sent_time = attrs["SentTimestamp"]
+        msg_id = record["messageId"]
+        msg_attrs = record["messageAttributes"]
+
+        # updated in this order so that the attrs from the attributes beat the user supplied
+        # msg attributes fields (hope the collisions never cause an issue)
+        meta_data.update(msg_attrs)
+
+        duplicate_keys = set(meta_data.keys()).intersection(set(attrs.keys()))
+        if len(duplicate_keys) > 0:
+            print(f"WARNING duplicate fields in both messageAttributes and attributes. Attributes' take precedence. {duplicate_keys}")
+        meta_data.update(attrs)
 
         archive_bytes = _create_archive_bytes(record)
+
+        print(f"Dumping failed event {msg_id}")
 
         writes.append(
             s3_client.put_object(
                 Body=archive_bytes,
                 Bucket=bucket,
-                Key=f"{prefix}/{original_req_id}.tar.gz",
-                Metadata={
-                    "RequestID": original_req_id,
-                    "ErrorCode": msg_attrs["ErrorCode"],
-                    "ErrorMessage": msg_attrs["ErrorMessage"]
-                }
+                Key=f"{prefix}/{msg_id}-{sent_time}.tar.gz",
+                Metadata=meta_data
             )
         )
     await gather(*writes)
@@ -51,7 +57,10 @@ def _create_archive_bytes(record):
         params_sio = io.BytesIO(message.encode("utf8"))
         tar_info = tarfile.TarInfo(name="body.json")
         tar_info.size = len(message)
+        params_sio.seek(0)
         archive.addfile(tar_info, params_sio)
+    # to read back the bytes we just wrote, reset the index
+    archive_bytes.seek(0)
     return archive_bytes
 
 
@@ -62,14 +71,20 @@ if __name__ == "__main__":
             s3_client.close()
         )
     try:
+        xray_recorder.configure(context=LambdaContext())
         save_dead_letter({
             "Records": [
                 {
                     "body": "nice",
+                    "messageId": "msg1",
                     "messageAttributes": {
                         "RequestID": "moo",
                         "ErrorCode": "foo",
                         "ErrorMessage": "fan"
+                    },
+                    "attributes": {
+                        "RequestID": "moo",
+                        "SentTimestamp": str(int(time.time()))
                     }
                 }
             ]},

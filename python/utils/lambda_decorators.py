@@ -2,7 +2,10 @@ from functools import wraps
 import traceback
 from asyncio import get_event_loop
 import json
+import os
 from utils.json_serialisation import dumps
+from aws_xray_sdk.core.async_context import AsyncContext
+from aws_xray_sdk.core import xray_recorder
 
 
 def ssm_parameters(ssm_client, *param_names):
@@ -36,12 +39,42 @@ def suppress_exceptions(return_value):
     return decorator
 
 
-def async_handler(handler):
-    @wraps(handler)
-    def wrapper(event, context):
-        context.loop = get_event_loop()
-        return context.loop.run_until_complete(handler(event, context))
-    return wrapper
+def async_handler(xray=False):
+    def decorator(handler):
+        # It is a little hard to get lambdas, asyncio, and xray all working together
+        # asyncio + xray => we have to configure the recorder to use the async context.
+        # Lambda configures xray to use the LambdaContext instead of AsyncContext
+        # That context is special e.g. it will deny you creating a new segment and it
+        # will have the trace entity pre-populated.
+        # This hack will obtain the original trace entity from the lambda context into the
+        # async context.
+        # N.B. We are losing features of the LambdaContext in the process e.g. no check against
+        # beginning another segment. The documentation for
+        # aws_xray_sdk.core.lambda_launcher.LambdaContext._refresh_context
+        # seems to suggest that LambdaContext also guards against resource leaks in the lambda
+        # context (not xray recorder context!)
+        # TODO probably best to implement an AsyncLambdaContext context that combines the
+        # behaviour of LambdaContext and AsyncContext. Better still raise an issue against xray
+        # libraries
+        async def set_context(future):
+            service_name = os.environ["AWS_LAMBDA_FUNCTION_NAME"]
+            current = xray_recorder.current_segment()
+            xray_context = AsyncContext()
+            xray_context.set_trace_entity(current)
+            xray_recorder.configure(service=service_name, context=xray_context)
+            return await future
+
+        @wraps(handler)
+        def wrapper(event, context):
+            context.loop = get_event_loop()
+            invoke = handler(event, context)
+            if xray:
+                from aws_xray_sdk.core import patch_all
+                patch_all()
+                invoke = set_context(invoke)
+            return context.loop.run_until_complete(invoke)
+        return wrapper
+    return decorator
 
 
 def dump_json_body(handler):

@@ -11,12 +11,15 @@ resource "aws_lambda_function" "dlq_recorder" {
     data.aws_ssm_parameter.dlq_recorder_layer.value,
   ]
 
+  tracing_config {
+    mode = "Active"
+  }
+
   environment {
     variables = {
       REGION   = var.aws_region
       S3_BUCKET    = var.s3_bucket
       S3_KEY_PREFIX = var.s3_key_prefix
-      SERVICE_NAME    = var.recorder_name
     }
   }
 
