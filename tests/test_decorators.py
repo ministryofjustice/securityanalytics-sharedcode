@@ -1,6 +1,7 @@
 import pytest
+import os
 from utils import lambda_decorators
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 from asyncio import get_running_loop
 
 
@@ -57,6 +58,7 @@ def test_suppress_exceptions_return_value():
 
 @pytest.mark.unit
 def test_async_decorator():
+    @patch.dict(os.environ, {"USE_XRAY": "0"})
     @lambda_decorators.async_handler()
     async def foo(event, _):
         assert get_running_loop()
