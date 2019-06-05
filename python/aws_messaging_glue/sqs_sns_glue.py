@@ -3,11 +3,6 @@ import aioboto3
 from utils.lambda_decorators import async_handler
 from asyncio import gather, run
 from collections import namedtuple
-from utils.tracing import create_trace_recorder
-
-# Enable xray tracing
-xray_recorder = create_trace_recorder()
-
 
 region = os.environ["REGION"]
 stage = os.environ["STAGE"]
@@ -24,6 +19,7 @@ async def forward_messages(event, _):
     coros = []
     for record in event["Records"]:
         msg_id = record["messageId"]
+        print(f"Forwarding message {msg_id}")
         body = record["body"]
         msg_attributes = record["messageAttributes"]
 
