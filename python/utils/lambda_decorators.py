@@ -69,11 +69,15 @@ def async_handler():
             context.loop = get_event_loop()
             invoke = handler(event, context)
             # Terraform true and false are 0/1
-            if "USE_XRAY" in os.environ and bool(int(os.environ["USE_XRAY"])):
+            if should_xray():
                 from aws_xray_sdk.core import patch_all
                 patch_all()
                 invoke = set_context(invoke)
             return context.loop.run_until_complete(invoke)
+
+        def should_xray():
+            return "USE_XRAY" in os.environ and os.environ["USE_XRAY"].lower() in {"true", "1"}
+
         return wrapper
     return decorator
 
