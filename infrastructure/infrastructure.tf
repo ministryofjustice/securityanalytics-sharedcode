@@ -38,7 +38,7 @@ variable "known_deployment_stages" {
 
 provider "aws" {
   version = "~> 2.13"
-  region = var.aws_region
+  region  = var.aws_region
 
   # N.B. To support all authentication use cases, we expect the local environment variables to provide auth details.
   allowed_account_ids = [var.account_id]
