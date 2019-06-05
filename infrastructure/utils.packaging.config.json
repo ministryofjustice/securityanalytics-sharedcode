@@ -3,10 +3,25 @@
     {
       "dir": "../python",
       "base_in_zip": "python"
+    },
+    {
+      "dir": "../.venv/Lib/site-packages",
+      "base_in_zip": "python",
+      "exclude_dev_deps": true
     }
   ],
   "excludes": [
     "test_utils",
-    "aws_messaging_glue"
+    "aws_messaging_glue",
+    "dlq_recorder",
+    "utils",
+    "package_lambda.py",
+    "docutils",
+    "jmespath",
+    "python-dateutil",
+    "s3transfer",
+    "six",
+    "pip",
+    "setuptools"
   ]
 }
