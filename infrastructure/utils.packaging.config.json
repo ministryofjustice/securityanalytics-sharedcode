@@ -14,7 +14,6 @@
     "test_utils",
     "aws_messaging_glue",
     "dlq_recorder",
-    "utils",
     "package_lambda.py",
     "docutils",
     "jmespath",
