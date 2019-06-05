@@ -12,7 +12,7 @@ resource "aws_lambda_function" "dlq_recorder" {
   ]
 
   tracing_config {
-    mode = "Active"
+    mode = var.use_xray ? "Active" : "PassThrough"
   }
 
   environment {
@@ -20,6 +20,7 @@ resource "aws_lambda_function" "dlq_recorder" {
       REGION   = var.aws_region
       STAGE    = terraform.workspace
       APP_NAME = var.app_name
+      USE_XRAY = var.use_xray
       DLQ_NAME = var.recorder_name
       S3_BUCKET    = var.s3_bucket
       S3_KEY_PREFIX = var.s3_key_prefix

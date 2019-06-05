@@ -34,3 +34,9 @@ variable "source_arn" {
   type = string
   description = "The arn of the source for the DLQ e.g. a lambda"
 }
+
+variable "use_xray" {
+  type = string
+  description = "Whether to instrument lambdas"
+  default = true
+}

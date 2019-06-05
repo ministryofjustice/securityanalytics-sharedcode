@@ -1,6 +1,7 @@
 import pytest
 from utils import lambda_decorators
 from unittest.mock import MagicMock
+from asyncio import get_running_loop
 
 
 @pytest.mark.unit
@@ -52,3 +53,12 @@ def test_suppress_exceptions_return_value():
         raise Exception('Original')
 
     assert foo({}, None) == 5
+
+
+@pytest.mark.unit
+def test_async_decorator():
+    @lambda_decorators.async_handler()
+    async def foo(event, _):
+        assert get_running_loop()
+
+    foo({}, MagicMock())

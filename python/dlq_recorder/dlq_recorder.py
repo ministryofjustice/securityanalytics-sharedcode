@@ -16,6 +16,7 @@ app_name = os.environ["APP_NAME"]
 bucket = os.environ["S3_BUCKET"]
 prefix = os.environ["S3_KEY_PREFIX"]
 dlq_name = os.environ["DLQ_NAME"]
+use_xray = bool(os.environ["USE_XRAY"])
 
 ssm_client = aioboto3.client("ssm", region_name=region)
 s3_client = aioboto3.client("s3", region_name=region)
@@ -30,7 +31,7 @@ ES_SQS = f"{ssm_prefix}/analytics/elastic/ingest_queue/id"
     ssm_client,
     ES_SQS
 )
-@async_handler(xray=True)
+@async_handler(xray=use_xray)
 async def save_dead_letter(event, _):
     es_queue = event['ssm_params'][ES_SQS]
     writes = []
