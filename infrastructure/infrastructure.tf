@@ -54,8 +54,8 @@ locals {
   # to use the resources in dev. Change
   ssm_source_stage = var.ssm_source_stage == "DEFAULT" ? terraform.workspace : var.ssm_source_stage
 
-  utils_zip    = "../.generated/${var.app_name}_utils.zip"
-  msg_glue_zip = "../.generated/${var.app_name}_msg_glue.zip"
+  utils_zip        = "../.generated/${var.app_name}_utils.zip"
+  msg_glue_zip     = "../.generated/${var.app_name}_msg_glue.zip"
   dlq_recorder_zip = "../.generated/${var.app_name}_dlq_recorder.zip"
 }
 
