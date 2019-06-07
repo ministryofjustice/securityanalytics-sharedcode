@@ -8,6 +8,8 @@ from collections import namedtuple
 from asyncio import run, gather
 from aws_xray_sdk.core.lambda_launcher import LambdaContext
 from aws_xray_sdk.core import xray_recorder
+import pytz
+from datetime import datetime
 
 region = os.environ["REGION"]
 stage = os.environ["STAGE"]
@@ -26,8 +28,13 @@ async def save_dead_letter(event, _):
         meta_data = {}
         attrs = record["attributes"]
         sent_time = attrs["SentTimestamp"]
+        sent_time = datetime.fromtimestamp(
+            int(sent_time) / 1000,
+            pytz.utc
+        ).isoformat().replace('+00:00', 'Z')
         meta_data["messageId"] = msg_id = record["messageId"]
         msg_attrs = record["messageAttributes"]
+        dead_message_key = f"{prefix}/{msg_id}-{sent_time}.tar.gz"
 
         # updated in this order so that the attrs from the attributes beat the user supplied
         # msg attributes fields (hope the collisions never cause an issue)
@@ -38,12 +45,11 @@ async def save_dead_letter(event, _):
             print(f"WARNING duplicate fields in both messageAttributes and attributes. Attributes' take precedence. {duplicate_keys}")
         meta_data.update(attrs)
 
-        meta_data["DeadLetterQueueName"] = bucket
-        meta_data["DeadMessageBucket"] = bucket
-        meta_data["DeadMessageKey"] = dead_message_key
+        meta_data["DeadLetterSentTime"] = sent_time
+        meta_data["DeadLetterQueueName"] = dlq_name
+        meta_data["DeadLetterKey"] = dead_message_key
 
         archive_bytes = _create_archive_bytes(record)
-        dead_message_key = f"{prefix}/{msg_id}-{sent_time}.tar.gz"
 
         print(f"Dumping failed event {msg_id}")
         writes.append(
