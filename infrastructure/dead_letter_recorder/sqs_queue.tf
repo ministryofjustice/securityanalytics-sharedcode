@@ -8,7 +8,7 @@ data "aws_iam_policy_document" "dlq_policy" {
       identifiers = [var.account_id]
     }
 
-    # Allow the lambda to send messages
+    # Allow the source to send messages
     condition {
       test     = "ArnEquals"
       variable = "aws:SourceArn"

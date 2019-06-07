@@ -112,7 +112,10 @@ data "aws_iam_policy_document" "dlq_recorder_perms" {
       "s3:PutObject",
     ]
 
-    resources = [var.s3_bucket_arn]
+    resources = [
+      var.s3_bucket_arn,
+      "${var.s3_bucket_arn}/*",
+    ]
   }
 }
 

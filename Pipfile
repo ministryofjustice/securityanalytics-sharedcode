@@ -3,6 +3,7 @@ pytest = "*"
 setuptools = "*"
 
 [packages]
+pytz = "*"
 aioboto3="*"
 aws-xray-sdk = "*"
 
