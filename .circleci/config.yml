@@ -23,8 +23,8 @@ jobs:
 
       - restore_cache:
           keys:
-            - python-v1-{{ .Branch }}-
-            - python-v1-
+            - other-v1-{{ .Branch }}-
+            - other-v1-
 
       - run:
           name: install virtual env
@@ -42,7 +42,7 @@ jobs:
             . .circleci/env.sh
             cd infrastructure
             terraform --version
-            terraform init -backend-config "bucket=$APP_NAME-terraform-state"
+            terraform init -reconfigure -backend-config "bucket=$APP_NAME-terraform-state"
             terraform get --update
             terraform workspace new $SSM_SOURCE_STAGE || terraform workspace select $SSM_SOURCE_STAGE
             echo checking formatting
@@ -75,11 +75,12 @@ jobs:
             - ".git"
 
       - save_cache:
-          key: python-v1-{{ .Branch }}-{{ .Revision }}
+          key: other-v1-{{ .Branch }}-{{ .Revision }}
           paths:
             - ".venv"
             - ".generated"
             - ".pytest_cache"
+            - "infrastructure/.terraform"
 
   unit-test:
     executor: builder
@@ -154,7 +155,7 @@ jobs:
       - save_cache:
           key: tf-moj-v1-{{ .Branch }}-{{ .Revision }}
           paths:
-            - ".terraform"
+            - "infrastructure/.terraform"
 
 workflows:
   version: 2
