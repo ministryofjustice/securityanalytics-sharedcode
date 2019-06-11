@@ -8,16 +8,28 @@ from aws_xray_sdk.core.async_context import AsyncContext
 from aws_xray_sdk.core import xray_recorder
 
 
+def _get_event_and_context(args):
+    if len(args) == 2:
+        event, context = args
+    # This branch is for class based handlers that also have a self that we can ignore
+    elif len(args) == 3:
+        _, event, context = args
+    else:
+        raise ValueError("Wrong number of arguments for lambda wrapper, should be event, context, or self, event, context")
+    return event, context
+
+
 def ssm_parameters(ssm_client, *param_names):
     def decorator(handler):
         @wraps(handler)
-        def wrapper(event, context):
+        def wrapper(*args):
+            event, _ = _get_event_and_context(args)
             loop = get_event_loop()
             task = loop.create_task(ssm_client.get_parameters(Names=[*param_names]))
             ssm_params = loop.run_until_complete(task)['Parameters']
             print(f"Retrieved SSM Parameters {dumps(ssm_params)}")
             event['ssm_params'] = {p['Name']: p['Value'] for p in ssm_params}
-            return handler(event, context)
+            return handler(*args)
         return wrapper
     return decorator
 
@@ -25,9 +37,9 @@ def ssm_parameters(ssm_client, *param_names):
 def suppress_exceptions(return_value):
     def decorator(handler):
         @wraps(handler)
-        def wrapper(event, context):
+        def wrapper(*args):
             try:
-                return handler(event, context)
+                return handler(*args)
             except Exception as e:
                 print(e)
                 traceback.print_exc()
@@ -65,9 +77,10 @@ def async_handler():
             return await future
 
         @wraps(handler)
-        def wrapper(event, context):
+        def wrapper(*args):
+            _, context = _get_event_and_context(args)
             context.loop = get_event_loop()
-            invoke = handler(event, context)
+            invoke = handler(*args)
             # Terraform true and false are 0/1
             if should_xray():
                 from aws_xray_sdk.core import patch_all
@@ -84,8 +97,8 @@ def async_handler():
 
 def dump_json_body(handler):
     @wraps(handler)
-    def wrapper(event, context):
-        response = handler(event, context)
+    def wrapper(*args):
+        response = handler(*args)
         if 'body' in response:
             try:
                 response['body'] = dumps(response['body'])
@@ -97,13 +110,14 @@ def dump_json_body(handler):
 
 def load_json_body(handler):
     @wraps(handler)
-    def wrapper(event, context):
+    def wrapper(*args):
+        event, _ = _get_event_and_context(args)
         if isinstance(event.get('body'), str):
             try:
                 event['body'] = json.loads(event['body'])
                 # TODO add the right exception type here
             except:
                 return {'statusCode': 400, 'body': 'BAD REQUEST'}
-        return handler(event, context)
+        return handler(*args)
 
     return wrapper
