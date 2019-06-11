@@ -56,8 +56,7 @@ with open(args.config_file, "r") as config_file, open(args.pipenv_lock, "r") as 
     if not parent_dir.exists():
         try:
             os.makedirs(parent_dir)
-        except:
-            FileExistsError:
+        except FileExistsError:
             pass
 
     with open(f"{args.output}.log", "w") as log:
