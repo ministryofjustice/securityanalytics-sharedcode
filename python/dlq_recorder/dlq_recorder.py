@@ -51,7 +51,7 @@ async def save_dead_letter(event, _):
 
         archive_bytes = _create_archive_bytes(record)
 
-        print(f"Dumping failed event {msg_id}")
+        print(f"Dumping failed event {msg_id}, with metadata {meta_data}")
         writes.append(
             s3_client.put_object(
                 Body=archive_bytes,
