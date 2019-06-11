@@ -54,7 +54,11 @@ with open(args.config_file, "r") as config_file, open(args.pipenv_lock, "r") as 
 
     parent_dir = Path(args.output).parent
     if not parent_dir.exists():
-        os.makedirs(parent_dir)
+        try:
+            os.makedirs(parent_dir)
+        except:
+            FileExistsError:
+            pass
 
     with open(f"{args.output}.log", "w") as log:
         with ZipFile(args.output, "w", compression=ZIP_DEFLATED) as zip_file:
@@ -64,7 +68,8 @@ with open(args.config_file, "r") as config_file, open(args.pipenv_lock, "r") as 
 
                 # on linux need the python version too
                 if sys.platform != "win32":
-                    base_dir_path = base_dir_path.replace(".venv/Lib/site-packages", ".venv/lib/python3.7/site-packages")
+                    base_dir_path = base_dir_path.replace(
+                        ".venv/Lib/site-packages", ".venv/lib/python3.7/site-packages")
 
                 os.chdir(base_dir_path)
                 for folder, sub_folders, file_names in os.walk(base_dir_path):
