@@ -33,7 +33,8 @@ async def save_dead_letter(event, _):
             pytz.utc
         ).isoformat().replace("+00:00", "Z")
         meta_data["messageId"] = msg_id = record["messageId"]
-        msg_attrs = [x["StringValue"] for x in record["messageAttributes"]]
+        msg_attrs = record["messageAttributes"]
+        msg_attrs = {k: v["stringValue"] for k, v in msg_attrs.items()}
         dead_message_key = f"{prefix}/{msg_id}-{sent_time}.tar.gz"
 
         # updated in this order so that the attrs from the attributes beat the user supplied
