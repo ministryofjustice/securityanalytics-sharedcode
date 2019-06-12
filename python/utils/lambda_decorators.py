@@ -15,7 +15,10 @@ def _get_event_and_context(args):
     elif len(args) == 3:
         _, event, context = args
     else:
-        raise ValueError("Wrong number of arguments for lambda wrapper, should be event, context, or self, event, context")
+        raise ValueError(
+            "Wrong number of arguments for lambda wrapper, "
+            "should be event, context, or self, event, context"
+        )
     return event, context
 
 
@@ -30,6 +33,42 @@ def ssm_parameters(ssm_client, *param_names):
             print(f"Retrieved SSM Parameters {dumps(ssm_params)}")
             event['ssm_params'] = {p['Name']: p['Value'] for p in ssm_params}
             return handler(*args)
+        return wrapper
+    return decorator
+
+
+def forward_exceptions_to_dlq(sqs_client, sqs_queue_url):
+    def decorator(handler):
+        @wraps(handler)
+        def wrapper(*args):
+            try:
+                return handler(*args)
+            except Exception as e:
+                event, context = _get_event_and_context(args)
+                context.loop = get_event_loop()
+                msg_attrs = {
+                    "RequestID": {
+                        "StringValue": str(context.aws_request_id),
+                        "DataType": "String"
+                    },
+                    "ErrorCode": {
+                        "StringValue": "500",
+                        "DataType": "Number"
+                    },
+                    "ErrorMessage": {
+                        "StringValue": traceback.format_exc(),
+                        "DataType": "String"
+                    }
+                }
+                context.loop.run_until_complete(
+                    sqs_client.send_message(
+                        QueueUrl=sqs_queue_url,
+                        MessageBody=dumps(event),
+                        MessageAttributes=msg_attrs
+                    )
+                )
+                # re-raise the exception, suppressing it would make the lambda appear to succeed
+                raise e
         return wrapper
     return decorator
 
@@ -71,10 +110,16 @@ def async_handler():
         async def set_context(future):
             service_name = os.environ["AWS_LAMBDA_FUNCTION_NAME"]
             current = xray_recorder.current_segment()
+            original_context = xray_recorder.context
             xray_context = AsyncContext()
             xray_context.set_trace_entity(current)
             xray_recorder.configure(service=service_name, context=xray_context)
-            return await future
+            try:
+                result = await future
+                return result
+            finally:
+                xray_recorder.configure(service=service_name, context=original_context)
+                xray_context.set_trace_entity(current)
 
         @wraps(handler)
         def wrapper(*args):
