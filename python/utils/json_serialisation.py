@@ -1,4 +1,5 @@
 from datetime import date, datetime
+from decimal import Decimal
 import json
 
 # Icky global used when testing to allow the serialisation of mocks
@@ -10,6 +11,10 @@ def json_serial(obj):
 
     if isinstance(obj, (datetime, date)):
         return obj.isoformat()
+    if isinstance(obj, Decimal):
+        return str(obj)
+    if isinstance(obj, set):
+        return "{}" if len(obj) == 0 else str(obj)
     elif stringify_all:
         return str(obj)
     raise TypeError("Type %s not serializable" % type(obj))

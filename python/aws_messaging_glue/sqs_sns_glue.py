@@ -1,8 +1,7 @@
 import os
 import aioboto3
 from utils.lambda_decorators import async_handler
-from asyncio import gather, run
-from collections import namedtuple
+from asyncio import gather
 
 region = os.environ["REGION"]
 stage = os.environ["STAGE"]
@@ -33,12 +32,14 @@ async def forward_messages(event, _):
 
 # For developer test use only
 if __name__ == "__main__":
+    from asyncio import run
+
     async def _clean_clients():
         return await gather(
             ssm_client.close(),
             sns_client.close()
         )
     try:
-        forward_messages({}, namedtuple("context", ["loop"]))
+        forward_messages({}, type("Context", (), {"loop": None})())
     finally:
         run(_clean_clients())
