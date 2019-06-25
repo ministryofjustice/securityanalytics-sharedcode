@@ -15,7 +15,7 @@ def json_serial(obj):
         return str(obj)
     # There is no set {}, or {1,2,3} syntax in json, so use an array instead
     if isinstance(obj, set):
-        return "[]" if len(obj) == 0 else str(list(obj))
+        return list(obj)
     elif stringify_all:
         return str(obj)
     raise TypeError("Type %s not serializable" % type(obj))
