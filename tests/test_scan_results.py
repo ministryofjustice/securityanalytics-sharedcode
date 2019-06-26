@@ -23,7 +23,8 @@ def test_publish_no_data():
             {
                 "scan_id": "scan_12",
                 "scan_start_time": iso_date_string_from_timestamp(123456),
-                "scan_end_time": iso_date_string_from_timestamp(789123)
+                "scan_end_time": iso_date_string_from_timestamp(789123),
+                "__docs": {}
             }
         ),
         MessageAttributes={
@@ -170,21 +171,23 @@ def test_summary_info_published():
                 "scan_id": "scan_9",
                 "scan_start_time": iso_date_string_from_timestamp(4),
                 "scan_end_time": iso_date_string_from_timestamp(5),
-                "host_info": [
-                    {
-                        "NonTemporalKey": ResultsContext._hash_of({
-                            "address": "123.456.123.456",
-                        }),
-                        "Data": {
-                            "address": "123.456.123.456",
-                            "uptime": "1234567",
-                            "summary_foo": "bar",
-                            "summary_boo": "baz",
-                            "summary_banana": "man",
-                            "__ParentKey": ResultsContext._hash_of({"address": "123.456.123.456"}),
+                "__docs": {
+                    "host_info": [
+                        {
+                            "NonTemporalKey": ResultsContext._hash_of({
+                                "address": "123.456.123.456",
+                            }),
+                            "Data": {
+                                "address": "123.456.123.456",
+                                "uptime": "1234567",
+                                "summary_foo": "bar",
+                                "summary_boo": "baz",
+                                "summary_banana": "man",
+                                "__ParentKey": ResultsContext._hash_of({"address": "123.456.123.456"}),
+                            }
                         }
-                    }
-                ]
+                    ]
+                }
             }
         ),
         MessageAttributes={

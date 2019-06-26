@@ -68,10 +68,12 @@ class ResultsContext:
         self.docs[doc_type] = docs_for_type
 
     def publish_results(self):
+        result_docs = {}
         msg_for_analytics_ingestor = {
             "scan_id": self.scan_id,
             "scan_start_time": self.start,
             "scan_end_time": self.end,
+            "__docs": result_docs
         }
         for doc_type, docs in self.docs.items():
             docs_for_type = []
@@ -80,7 +82,7 @@ class ResultsContext:
                     "NonTemporalKey": self._hash_of(key),
                     "Data": doc
                 })
-            msg_for_analytics_ingestor[doc_type] = docs_for_type
+            result_docs[doc_type] = docs_for_type
 
         r = self.sns_client.publish(
             TopicArn=self.topic,
