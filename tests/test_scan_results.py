@@ -28,7 +28,7 @@ def test_publish_no_data():
             }
         ),
         MessageAttributes={
-            "ParentKey": {"StringValue": ResultsContext._hash_of("123.123.123.123"), "DataType": "String"},
+            "ParentKey": {"StringValue": ResultsContext._hash_of({"address": "123.123.123.123"}), "DataType": "String"},
             "TemporalKey": {"StringValue": ResultsContext._hash_of(iso_date_string_from_timestamp(789123)),
                             "DataType": "String"}
         }
