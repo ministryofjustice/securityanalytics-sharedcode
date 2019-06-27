@@ -1,10 +1,12 @@
 from hashlib import sha256
 from utils.json_serialisation import dumps
 
+
+# TODO move this, it is not a general util, it should probably live in the analytics project, along with the
+# ingestor that uses its output.
+#
 # Tracks context for results e.g. the main data result has key fields of scan id, address and address type
 # When looking at a port the port id and protocol are pushed onto that context
-
-
 class ResultsContext:
     def __init__(self, topic, non_temporal_key_fields, scan_id, start, end, task_name, sns_client):
         self.parent_key = non_temporal_key_fields
