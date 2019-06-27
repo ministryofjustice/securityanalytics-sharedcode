@@ -7,6 +7,7 @@ from utils.json_serialisation import dumps
 
 class ResultsContext:
     def __init__(self, topic, non_temporal_key_fields, scan_id, start, end, task_name, sns_client):
+        self.parent_key = non_temporal_key_fields
         self.non_temporal_key = [non_temporal_key_fields]
         self.scan_id = scan_id
         self.start = start
@@ -16,6 +17,7 @@ class ResultsContext:
         self.sns_client = sns_client
         self.summaries = {}
         print(f"Created publication context {self.topic}, {self._key()}, {self.end}")
+        self.docs = {}
 
     def push_context(self, non_temporal_key_fields):
         self.non_temporal_key.append(non_temporal_key_fields)
@@ -31,35 +33,64 @@ class ResultsContext:
         for k, v in summaries.items():
             self.summaries[k] = v
 
+    def _parent_key(self):
+        return str(self.parent_key)
+
     def _key(self):
-        return "/".join(self._key_fields().values())
+        return str(self._key_fields())
 
     def _key_fields(self):
         return {k: v for field in self.non_temporal_key for k, v in field.items()}
 
-    def _hash_of(self, value):
+    @staticmethod
+    def _hash_of(value):
         hasher = sha256()
-        hasher.update(value.encode('utf-8'))
+        hasher.update(str(value).encode('utf-8'))
         hash_val = hasher.hexdigest()
-        print(f"Mapped non-temporal key {value} to hash {hash_val}")
+        print(f"Mapped key {value} to hash {hash_val}")
         return hash_val
 
     def post_results(self, doc_type, data, include_summaries=False):
         if include_summaries:
             for key, value in self.summaries.items():
                 data[f"summary_{key}"] = value
+
+        docs_for_type = self.docs.get(doc_type, {})
+
+        key_and_data = {**self._key_fields(), **data}
+
+        # When there is a deep stack of non temporal key sets, then we need to add the
+        # parent id to enable the deletes of old snapshots
+        key_and_data["__ParentKey"] = self._hash_of(self._parent_key())
+
+        docs_for_type[self._key()] = key_and_data
+
+        self.docs[doc_type] = docs_for_type
+
+    def publish_results(self):
+        result_docs = {}
+        msg_for_analytics_ingestor = {
+            "scan_id": self.scan_id,
+            "scan_start_time": self.start,
+            "scan_end_time": self.end,
+            "__docs": result_docs
+        }
+        for doc_type, docs in self.docs.items():
+            docs_for_type = []
+            for key, doc in docs.items():
+                docs_for_type.append({
+                    "NonTemporalKey": self._hash_of(key),
+                    "Data": doc
+                })
+            result_docs[doc_type] = docs_for_type
+
         r = self.sns_client.publish(
             TopicArn=self.topic,
-            Subject=f"{self.task_name}:{doc_type}",
-            Message=dumps({
-                **self._key_fields(),
-                "scan_id": self.scan_id,
-                "scan_start_time": self.start,
-                "scan_end_time": self.end,
-                **data}),
+            Subject=f"{self.task_name}",
+            Message=dumps(msg_for_analytics_ingestor),
             MessageAttributes={
-                "NonTemporalKey": {"StringValue": self._hash_of(self._key()), "DataType": "String"},
-                "ScanEndTime": {"StringValue": self._hash_of(self.end), "DataType": "String"}
+                "ParentKey": {"StringValue": self._hash_of(self._parent_key()), "DataType": "String"},
+                "TemporalKey": {"StringValue": self._hash_of(self.end), "DataType": "String"}
             }
         )
         print(f"Published message {r['MessageId']}")
