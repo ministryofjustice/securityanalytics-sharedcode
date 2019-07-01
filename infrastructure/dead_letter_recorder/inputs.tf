@@ -1,13 +1,13 @@
 variable "aws_region" {
-  type=string
+  type = string
 }
 
 variable "app_name" {
-  type=string
+  type = string
 }
 
 variable "account_id" {
-  type=string
+  type = string
 }
 
 variable "ssm_source_stage" {
@@ -15,13 +15,13 @@ variable "ssm_source_stage" {
 }
 
 variable "use_xray" {
-  type = string
+  type        = string
   description = "Whether to instrument lambdas"
-  default = true
+  default     = true
 }
 
 variable "recorder_name" {
-  type=string
+  type = string
 }
 
 variable "s3_bucket" {
@@ -37,6 +37,6 @@ variable "s3_key_prefix" {
 }
 
 variable "source_arn" {
-  type = string
+  type        = string
   description = "The arn of the source for the DLQ e.g. a lambda"
 }

@@ -1,4 +1,5 @@
 resource "aws_lambda_function" "dlq_recorder" {
+  depends_on       = [aws_iam_role_policy_attachment.dlq_recorder_perms]
   function_name    = "${terraform.workspace}-${var.app_name}-${var.recorder_name}"
   handler          = "dlq_recorder.dlq_recorder.save_dead_letter"
   role             = aws_iam_role.dlq_recorder.arn
@@ -17,12 +18,12 @@ resource "aws_lambda_function" "dlq_recorder" {
 
   environment {
     variables = {
-      REGION   = var.aws_region
-      STAGE    = terraform.workspace
-      APP_NAME = var.app_name
-      USE_XRAY = var.use_xray
-      DLQ_NAME = var.recorder_name
-      S3_BUCKET    = var.s3_bucket
+      REGION        = var.aws_region
+      STAGE         = terraform.workspace
+      APP_NAME      = var.app_name
+      USE_XRAY      = var.use_xray
+      DLQ_NAME      = var.recorder_name
+      S3_BUCKET     = var.s3_bucket
       S3_KEY_PREFIX = var.s3_key_prefix
     }
   }

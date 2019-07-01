@@ -1,10 +1,10 @@
 data "aws_iam_policy_document" "dlq_policy" {
   statement {
     actions = ["sqs:SendMessage"]
-    effect  = "Allow"
+    effect = "Allow"
 
     principals {
-      type        = "AWS"
+      type = "AWS"
       identifiers = [var.account_id]
     }
 
@@ -13,9 +13,7 @@ data "aws_iam_policy_document" "dlq_policy" {
       test     = "ArnEquals"
       variable = "aws:SourceArn"
 
-      values = [
-        var.source_arn,
-      ]
+      values = [var.source_arn]
     }
 
     resources = [aws_sqs_queue.dlq.arn]
