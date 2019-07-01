@@ -32,7 +32,7 @@ variable "ssm_source_stage" {
 }
 
 variable "known_deployment_stages" {
-  type = list(string)
+  type    = list(string)
   default = ["dev", "qa", "prod"]
 }
 
@@ -90,22 +90,22 @@ data "external" "dlq_recorder_zip" {
 }
 
 resource "aws_lambda_layer_version" "utils_layer" {
-  description = "Utils layer with hash ${data.external.utils_zip.result.hash}"
-  filename    = local.utils_zip
-  layer_name  = "${terraform.workspace}-${var.app_name}-shared-utils"
+  description         = "Utils layer with hash ${data.external.utils_zip.result.hash}"
+  filename            = local.utils_zip
+  layer_name          = "${terraform.workspace}-${var.app_name}-shared-utils"
   compatible_runtimes = ["python3.7"]
 }
 
 resource "aws_lambda_layer_version" "msg_glue_layer" {
-  description = "Message glue layer with hash ${data.external.msg_glue_zip.result.hash}"
-  filename    = local.msg_glue_zip
-  layer_name  = "${terraform.workspace}-${var.app_name}-msg-glue"
+  description         = "Message glue layer with hash ${data.external.msg_glue_zip.result.hash}"
+  filename            = local.msg_glue_zip
+  layer_name          = "${terraform.workspace}-${var.app_name}-msg-glue"
   compatible_runtimes = ["python3.7"]
 }
 
 resource "aws_lambda_layer_version" "dlq_recorder_layer" {
-  description = "Dead letter queue recorder ${data.external.dlq_recorder_zip.result.hash}"
-  filename    = local.dlq_recorder_zip
-  layer_name  = "${terraform.workspace}-${var.app_name}-dlq-recorder"
+  description         = "Dead letter queue recorder ${data.external.dlq_recorder_zip.result.hash}"
+  filename            = local.dlq_recorder_zip
+  layer_name          = "${terraform.workspace}-${var.app_name}-dlq-recorder"
   compatible_runtimes = ["python3.7"]
 }

@@ -1,5 +1,5 @@
 resource "aws_lambda_function" "sqs_sns_glue" {
-  depends_on = [aws_iam_role_policy_attachment.scan_initiator_perms]
+  depends_on       = [aws_iam_role_policy_attachment.scan_initiator_perms]
   function_name    = "${terraform.workspace}-${var.app_name}-${var.glue_name}"
   handler          = "aws_messaging_glue.sqs_sns_glue.forward_messages"
   role             = aws_iam_role.sqs_sns_glue.arn
@@ -36,7 +36,7 @@ resource "aws_lambda_permission" "glue_invoke" {
 }
 
 resource "aws_lambda_event_source_mapping" "glue_trigger" {
-  depends_on = [aws_lambda_permission.glue_invoke]
+  depends_on       = [aws_lambda_permission.glue_invoke]
   event_source_arn = var.sqs_queue_arn
   function_name    = aws_lambda_function.sqs_sns_glue.arn
   enabled          = true
@@ -46,10 +46,10 @@ resource "aws_lambda_event_source_mapping" "glue_trigger" {
 data "aws_iam_policy_document" "lambda_trust" {
   statement {
     actions = ["sts:AssumeRole"]
-    effect = "Allow"
+    effect  = "Allow"
 
     principals {
-      type = "Service"
+      type        = "Service"
       identifiers = ["lambda.amazonaws.com"]
     }
   }
