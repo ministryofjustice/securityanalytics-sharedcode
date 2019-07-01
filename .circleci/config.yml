@@ -144,6 +144,7 @@ jobs:
             . .circleci/env.sh
             cd infrastructure
             terraform init -backend-config "bucket=$MOJ_APP_NAME-terraform-state" -reconfigure
+            terraform get --update
             terraform workspace new dev || terraform workspace select dev
             terraform apply -auto-approve -var account_id=$MOJ_ACCOUNT_ID -var app_name=$MOJ_APP_NAME
 
