@@ -8,7 +8,7 @@ class SqsConsumerMixin(ABC):
 
     # Overriding this method allows subsclasses to initialise e.g. aws clients
     @abstractmethod
-    async def _initialise(self):
+    async def initialise(self):
         pass
 
     @abstractmethod
