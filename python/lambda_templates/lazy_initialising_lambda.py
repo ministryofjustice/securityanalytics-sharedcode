@@ -17,11 +17,10 @@ class LazyInitLambda(ABC):
         self.context = None
         self.initialised = False
         self.ssm_client = None
-        self.ssm_params = None
 
     # Overriding this method allows subsclasses to initialise e.g. aws clients
     @abstractmethod
-    async def initialise(self):
+    def initialise(self):
         pass
 
     # This is how the implementor handles the event
@@ -36,19 +35,21 @@ class LazyInitLambda(ABC):
             relative_name = f"/{relative_name}"
         return self.event.ssm_params[f"{self._ssm_prefix}{relative_name}"]
 
-    @async_handler
-    async def invoke(self, event, context):
+    def invoke(self, event, context):
         self.context = context
         self.event = event
-        await self._ensure_initialised()
+        self._ensure_initialised()
 
-        @ssm_parameters(self.ssm_params, self._ssm_params_to_load)
+        @ssm_parameters(self.ssm_client, self._ssm_params_to_load)
+        @async_handler()
         async def handle_event_with_params(_event, _context):
             return await self.invoke_impl(event, context)
 
-    async def _ensure_initialised(self):
+        handle_event_with_params(event, context)
+
+    def _ensure_initialised(self):
         if not self.initialised:
             self.initialised = True
             self.ssm_client = aioboto3.client("ssm", region_name=self.region)
             # call the subclasses' initialisers
-            await self.initialise()
+            self.initialise()
