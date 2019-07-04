@@ -6,7 +6,7 @@ from utils.lambda_decorators import ssm_parameters, async_handler
 
 class LazyInitLambda(ABC):
     def __init__(self, ssm_params_to_load):
-        super.__init__(self)
+        super(ABC, self).__init__()
         self.region = os.environ["REGION"]
         self.stage = os.environ["STAGE"]
         self.app_name = os.environ["APP_NAME"]
