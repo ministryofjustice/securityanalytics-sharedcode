@@ -5,15 +5,16 @@ from utils.time_utils import iso_date_string_from_timestamp
 from utils.json_serialisation import dumps
 
 
+@pytest.mark.asyncio
 @pytest.mark.unit
-def test_publish_no_data():
+async def test_publish_no_data():
     mock_sns_client = MagicMock()
     mock_sns_client.publish.return_value = {"MessageId": "Msg32"}
     context = ResultsContext("PubTopic", {"address": "123.123.123.123"}, "scan_12",
                              iso_date_string_from_timestamp(123456), iso_date_string_from_timestamp(789123),
                              "scan_name", mock_sns_client)
 
-    context.publish_results()
+    await context.publish_results()
 
     # it should publish the top level info parent and temporal key
     mock_sns_client.publish.assert_called_with(
@@ -35,8 +36,9 @@ def test_publish_no_data():
     )
 
 
+@pytest.mark.asyncio
 @pytest.mark.unit
-def test_context_push_and_pop():
+async def test_context_push_and_pop():
     mock_sns_client = MagicMock()
     mock_sns_client.publish.return_value = {"MessageId": "Msg32"}
     context = ResultsContext("PubTopic", {"address": "123.456.123.456"}, "scan_2", iso_date_string_from_timestamp(4),
@@ -55,7 +57,7 @@ def test_context_push_and_pop():
     context.post_results("port_info", {"open": "true"})
     context.pop_context()
     context.post_results("host_info", {"uptime": "1234567"})
-    context.publish_results()
+    await context.publish_results()
 
     # it should publish the top level info parent and temporal key
     mock_sns_client.publish.assert_called_with(
@@ -151,8 +153,9 @@ def test_context_push_and_pop():
     )
 
 
+@pytest.mark.asyncio
 @pytest.mark.unit
-def test_summary_info_published():
+async def test_summary_info_published():
     mock_sns_client = MagicMock()
     mock_sns_client.publish.return_value = {"MessageId": "Msg32"}
     context = ResultsContext("PubTopic", {"address": "123.456.123.456"}, "scan_9", iso_date_string_from_timestamp(4),
@@ -161,7 +164,7 @@ def test_summary_info_published():
     context.add_summaries({"foo": "bar", "boo": "baz"})
     context.add_summary("banana", "man")
     context.post_results("host_info", {"uptime": "1234567"}, include_summaries=True)
-    context.publish_results()
+    await context.publish_results()
 
     mock_sns_client.publish.assert_called_with(
         TopicArn="PubTopic",
