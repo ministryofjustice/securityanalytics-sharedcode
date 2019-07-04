@@ -31,7 +31,7 @@ class LazyInitLambda(ABC):
     # Other ssm params can be accessed with this method, uses relative name e.g.
     # use "/lambda/layers/utils/arn", instead of "/sec-an/dev/lambda/layers/utils/arn"
     def get_ssm_param(self, relative_name):
-        if not relative_name.starts_with("/"):
+        if relative_name.starts_with("/"):
             relative_name = f"/{relative_name}"
         return self.event.ssm_params[f"{self._ssm_prefix}{relative_name}"]
 
