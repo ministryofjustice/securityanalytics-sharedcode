@@ -31,7 +31,7 @@ class LazyInitLambda(ABC):
     # Other ssm params can be accessed with this method, uses relative name e.g.
     # use "/lambda/layers/utils/arn", instead of "/sec-an/dev/lambda/layers/utils/arn"
     def get_ssm_param(self, relative_name):
-        if relative_name.startswith("/"):
+        if not relative_name.startswith("/"):
             relative_name = f"/{relative_name}"
         return self.event["ssm_params"][f"{self._ssm_prefix}{relative_name}"]
 
@@ -39,7 +39,7 @@ class LazyInitLambda(ABC):
         self.context = context
         self.event = event
         self._ensure_initialised()
-        print(f"Loading {self._ssm_params_to_load}")
+        print(f"Loading ssm params {self._ssm_params_to_load}")
 
         @ssm_parameters(self.ssm_client, *self._ssm_params_to_load)
         @async_handler()
