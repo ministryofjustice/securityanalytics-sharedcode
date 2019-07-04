@@ -1,5 +1,6 @@
 [dev-packages]
 pytest = "*"
+pytest-asyncio = "*"
 setuptools = "*"
 
 [packages]
