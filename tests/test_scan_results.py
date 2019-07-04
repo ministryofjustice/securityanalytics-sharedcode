@@ -3,16 +3,23 @@ from unittest.mock import MagicMock
 from utils.scan_results import ResultsContext
 from utils.time_utils import iso_date_string_from_timestamp
 from utils.json_serialisation import dumps
+from test_utils.test_utils import coroutine_of
 
 
 @pytest.mark.asyncio
 @pytest.mark.unit
 async def test_publish_no_data():
     mock_sns_client = MagicMock()
-    mock_sns_client.publish.return_value = {"MessageId": "Msg32"}
-    context = ResultsContext("PubTopic", {"address": "123.123.123.123"}, "scan_12",
-                             iso_date_string_from_timestamp(123456), iso_date_string_from_timestamp(789123),
-                             "scan_name", mock_sns_client)
+    mock_sns_client.publish.return_value = coroutine_of({"MessageId": "Msg32"})
+    context = ResultsContext(
+        "PubTopic",
+        {"address": "123.123.123.123"},
+        "scan_12",
+        iso_date_string_from_timestamp(123456),
+        iso_date_string_from_timestamp(789123),
+        "scan_name",
+        mock_sns_client
+    )
 
     await context.publish_results()
 
@@ -40,9 +47,16 @@ async def test_publish_no_data():
 @pytest.mark.unit
 async def test_context_push_and_pop():
     mock_sns_client = MagicMock()
-    mock_sns_client.publish.return_value = {"MessageId": "Msg32"}
-    context = ResultsContext("PubTopic", {"address": "123.456.123.456"}, "scan_2", iso_date_string_from_timestamp(4),
-                             iso_date_string_from_timestamp(5), "scan_name", mock_sns_client)
+    mock_sns_client.publish.return_value = coroutine_of({"MessageId": "Msg32"})
+    context = ResultsContext(
+        "PubTopic",
+        {"address": "123.456.123.456"},
+        "scan_2",
+        iso_date_string_from_timestamp(4),
+        iso_date_string_from_timestamp(5),
+        "scan_name",
+        mock_sns_client
+    )
 
     context.push_context({"port": "22"})
     context.post_results("port_info", {"open": "false"})
@@ -157,9 +171,16 @@ async def test_context_push_and_pop():
 @pytest.mark.unit
 async def test_summary_info_published():
     mock_sns_client = MagicMock()
-    mock_sns_client.publish.return_value = {"MessageId": "Msg32"}
-    context = ResultsContext("PubTopic", {"address": "123.456.123.456"}, "scan_9", iso_date_string_from_timestamp(4),
-                             iso_date_string_from_timestamp(5), "scan_name", mock_sns_client)
+    mock_sns_client.publish.return_value = coroutine_of({"MessageId": "Msg32"})
+    context = ResultsContext(
+        "PubTopic",
+        {"address": "123.456.123.456"},
+        "scan_9",
+        iso_date_string_from_timestamp(4),
+        iso_date_string_from_timestamp(5),
+        "scan_name",
+        mock_sns_client
+    )
 
     context.add_summaries({"foo": "bar", "boo": "baz"})
     context.add_summary("banana", "man")
