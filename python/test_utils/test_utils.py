@@ -20,11 +20,12 @@ def resetting_mocks(*mocks):
 def serialise_mocks():
     def decorator(handler):
         @wraps(handler)
-        def wrapper():
+        def wrapper(*args):
             old_val = json_serialisation.stringify_all
             json_serialisation.stringify_all = True
-            handler()
+            result = handler(*args)
             json_serialisation.stringify_all = old_val
+            return result
         return wrapper
     return decorator
 

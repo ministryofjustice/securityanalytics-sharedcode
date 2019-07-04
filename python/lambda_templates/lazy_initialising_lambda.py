@@ -12,7 +12,6 @@ class LazyInitLambda(ABC):
         self.app_name = os.environ["APP_NAME"]
         self._ssm_prefix = f"/{self.app_name}/{self.stage}"
         self._ssm_params_to_load = [f"{self._ssm_prefix}{x}" for x in ssm_params_to_load]
-        print(f"LLammelliaerionion {self._ssm_params_to_load} - {self._ssm_prefix}")
 
         self.event = None
         self.context = None
@@ -39,7 +38,7 @@ class LazyInitLambda(ABC):
     def invoke(self, event, context):
         self.context = context
         self.event = event
-        self._ensure_initialised()
+        self.ensure_initialised()
         print(f"Loading ssm params {self._ssm_params_to_load}")
 
         @ssm_parameters(self.ssm_client, *self._ssm_params_to_load)
@@ -49,7 +48,7 @@ class LazyInitLambda(ABC):
 
         handle_event_with_params(event, context)
 
-    def _ensure_initialised(self):
+    def ensure_initialised(self):
         if not self.initialised:
             self.initialised = True
             self.ssm_client = aioboto3.client("ssm", region_name=self.region)
