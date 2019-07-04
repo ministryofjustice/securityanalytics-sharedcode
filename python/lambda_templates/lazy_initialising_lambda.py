@@ -33,7 +33,7 @@ class LazyInitLambda(ABC):
     def get_ssm_param(self, relative_name):
         if relative_name.startswith("/"):
             relative_name = f"/{relative_name}"
-        return self.event.ssm_params[f"{self._ssm_prefix}{relative_name}"]
+        return self.event["ssm_params"][f"{self._ssm_prefix}{relative_name}"]
 
     def invoke(self, event, context):
         self.context = context
