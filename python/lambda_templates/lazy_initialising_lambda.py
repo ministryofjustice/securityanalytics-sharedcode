@@ -39,6 +39,7 @@ class LazyInitLambda(ABC):
         self.context = context
         self.event = event
         self._ensure_initialised()
+        print(f"Loading {self._ssm_params_to_load}")
 
         @ssm_parameters(self.ssm_client, self._ssm_params_to_load)
         @async_handler()
