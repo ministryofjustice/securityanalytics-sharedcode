@@ -12,10 +12,10 @@ class SqsConsumerMixin(ABC):
         pass
 
     @abstractmethod
-    async def _process_event(self, message_id, body):
+    async def process_event(self, message_id, body):
         pass
 
-    async def _invoke(self, event, _):
+    async def invoke_impl(self, event, _):
         await gather(*[
             self._invoke_scan_impl(record["messageId"], record["body"])
             for record in event["Records"]
