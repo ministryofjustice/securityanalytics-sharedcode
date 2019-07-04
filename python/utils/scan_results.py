@@ -69,7 +69,7 @@ class ResultsContext:
 
         self.docs[doc_type] = docs_for_type
 
-    def publish_results(self):
+    async def publish_results(self):
         result_docs = {}
         msg_for_analytics_ingestor = {
             "scan_id": self.scan_id,
@@ -86,7 +86,7 @@ class ResultsContext:
                 })
             result_docs[doc_type] = docs_for_type
 
-        r = self.sns_client.publish(
+        r = await self.sns_client.publish(
             TopicArn=self.topic,
             Subject=f"{self.task_name}",
             Message=dumps(msg_for_analytics_ingestor),
