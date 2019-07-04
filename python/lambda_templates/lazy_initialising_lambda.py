@@ -41,7 +41,7 @@ class LazyInitLambda(ABC):
         self._ensure_initialised()
         print(f"Loading {self._ssm_params_to_load}")
 
-        @ssm_parameters(self.ssm_client, self._ssm_params_to_load)
+        @ssm_parameters(self.ssm_client, *self._ssm_params_to_load)
         @async_handler()
         async def handle_event_with_params(_event, _context):
             return await self.invoke_impl(event, context)
