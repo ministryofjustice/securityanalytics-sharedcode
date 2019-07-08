@@ -25,14 +25,14 @@ def _get_event_and_context(args):
 def ssm_parameters(ssm_client, *param_names):
     def decorator(handler):
         @wraps(handler)
-        def wrapper(*args):
+        def wrapper(*args, **kwargs):
             event, _ = _get_event_and_context(args)
             loop = get_event_loop()
             task = loop.create_task(ssm_client.get_parameters(Names=[*param_names]))
             ssm_params = loop.run_until_complete(task)['Parameters']
             print(f"Retrieved SSM Parameters {dumps(ssm_params)}")
             event['ssm_params'] = {p['Name']: p['Value'] for p in ssm_params}
-            return handler(*args)
+            return handler(*args, **kwargs)
         return wrapper
     return decorator
 
@@ -40,9 +40,9 @@ def ssm_parameters(ssm_client, *param_names):
 def forward_exceptions_to_dlq(sqs_client, sqs_queue_url):
     def decorator(handler):
         @wraps(handler)
-        def wrapper(*args):
+        def wrapper(*args, **kwargs):
             try:
-                return handler(*args)
+                return handler(*args, **kwargs)
             except Exception as e:
                 event, context = _get_event_and_context(args)
                 context.loop = get_event_loop()
@@ -122,10 +122,10 @@ def async_handler():
                 xray_context.set_trace_entity(current)
 
         @wraps(handler)
-        def wrapper(*args):
+        def wrapper(*args, **kwargs):
             _, context = _get_event_and_context(args)
             context.loop = get_event_loop()
-            invoke = handler(*args)
+            invoke = handler(*args, **kwargs)
             # Terraform true and false are 0/1
             if should_xray():
                 from aws_xray_sdk.core import patch_all
@@ -142,8 +142,8 @@ def async_handler():
 
 def dump_json_body(handler):
     @wraps(handler)
-    def wrapper(*args):
-        response = handler(*args)
+    def wrapper(*args, **kwargs):
+        response = handler(*args, **kwargs)
         if 'body' in response:
             try:
                 response['body'] = dumps(response['body'])
@@ -155,7 +155,7 @@ def dump_json_body(handler):
 
 def load_json_body(handler):
     @wraps(handler)
-    def wrapper(*args):
+    def wrapper(*args, **kwargs):
         event, _ = _get_event_and_context(args)
         if isinstance(event.get('body'), str):
             try:
@@ -163,6 +163,6 @@ def load_json_body(handler):
                 # TODO add the right exception type here
             except:
                 return {'statusCode': 400, 'body': 'BAD REQUEST'}
-        return handler(*args)
+        return handler(*args, **kwargs)
 
     return wrapper
