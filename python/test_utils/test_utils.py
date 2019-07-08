@@ -7,9 +7,9 @@ from unittest.mock import MagicMock
 def resetting_mocks(*mocks):
     def decorator(handler):
         @wraps(handler)
-        def wrapper():
+        def wrapper(*args, **kwargs):
             try:
-                handler()
+                return handler(*args, **kwargs)
             finally:
                 for mock in mocks:
                     mock.reset_mock(return_value=True, side_effect=True)
@@ -20,10 +20,10 @@ def resetting_mocks(*mocks):
 def serialise_mocks():
     def decorator(handler):
         @wraps(handler)
-        def wrapper(*args):
+        def wrapper(*args, **kwargs):
             old_val = json_serialisation.stringify_all
             json_serialisation.stringify_all = True
-            result = handler(*args)
+            result = handler(*args*args, **kwargs)
             json_serialisation.stringify_all = old_val
             return result
         return wrapper

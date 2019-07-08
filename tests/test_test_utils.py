@@ -80,7 +80,7 @@ def test_can_combine_serialise_mocks_with_others():
     @patch.dict(os.environ, {})
     @patch("aioboto3.client")
     @patch("utils.json_serialisation.stringify_all")
-    def one(aioboto_mock, stringify_mock):
+    def seven(aioboto_mock, stringify_mock):
         return shared_mock()
 
-    assert one() == 7
+    assert seven() == 7
