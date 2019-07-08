@@ -23,7 +23,7 @@ def serialise_mocks():
         def wrapper(*args, **kwargs):
             old_val = json_serialisation.stringify_all
             json_serialisation.stringify_all = True
-            result = handler(*args*args, **kwargs)
+            result = handler(*args, **kwargs)
             json_serialisation.stringify_all = old_val
             return result
         return wrapper
