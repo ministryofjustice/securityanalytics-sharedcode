@@ -100,7 +100,10 @@ def test_async_decorator_on_lazy(client_mock):
 
     class Foo(LazyInitLambda):
         def __init__(self):
-            LazyInitLambda.__init__(self, [])
+            LazyInitLambda.__init__(self)
+
+        def ssm_parameters_to_load(self):
+            return []
 
         async def invoke_impl(self, event, context):
             nonlocal hit
