@@ -5,7 +5,7 @@ from utils.lambda_decorators import ssm_parameters, async_handler
 
 
 class LazyInitLambda(ABC):
-    def __init__(self, ssm_params_to_load):
+    def __init__(self):
         super(ABC, self).__init__()
         self.region = os.environ["REGION"]
         self.stage = os.environ["STAGE"]
@@ -14,12 +14,15 @@ class LazyInitLambda(ABC):
         self.app_name = os.environ["APP_NAME"]
         self.ssm_stage_prefix = f"/{self.app_name}/{self.stage}"
         self.ssm_source_stage_prefix = f"/{self.app_name}/{self.ssm_source_stage}"
-        self._ssm_params_to_load = ssm_params_to_load
 
         self.event = None
         self.context = None
         self.initialised = False
         self.ssm_client = None
+
+    @abstractmethod
+    def ssm_parameters_to_load(self):
+        pass
 
     # Overriding this method allows subsclasses to initialise e.g. aws clients
     @abstractmethod
@@ -40,9 +43,10 @@ class LazyInitLambda(ABC):
         self.context = context
         self.event = event
         self.ensure_initialised()
-        print(f"Loading ssm params {self._ssm_params_to_load}")
+        ssm_params_to_load = self.ssm_parameters_to_load()
+        print(f"Loading ssm params {ssm_params_to_load}")
 
-        @ssm_parameters(self.ssm_client, *self._ssm_params_to_load)
+        @ssm_parameters(self.ssm_client, *ssm_params_to_load)
         @async_handler()
         async def handle_event_with_params(_event, _context):
             return await self.invoke_impl(event, context)
