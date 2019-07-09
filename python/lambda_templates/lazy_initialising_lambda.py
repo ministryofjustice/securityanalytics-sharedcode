@@ -12,9 +12,9 @@ class LazyInitLambda(ABC):
         self.ssm_source_stage = \
             os.environ["SSM_SOURCE_STAGE"] if "SSM_SOURCE_STAGE" in os.environ else self.stage
         self.app_name = os.environ["APP_NAME"]
-        self._ssm_stage_prefix = f"/{self.app_name}/{self.stage}"
-        self._ssm_source_stage_prefix = f"/{self.app_name}/{self.ssm_source_stage}"
-        self._ssm_params_to_load = [f"{self._ssm_prefix}{x}" for x in ssm_params_to_load]
+        self.ssm_stage_prefix = f"/{self.app_name}/{self.stage}"
+        self.ssm_source_stage_prefix = f"/{self.app_name}/{self.ssm_source_stage}"
+        self._ssm_params_to_load = ssm_params_to_load
 
         self.event = None
         self.context = None
@@ -33,12 +33,8 @@ class LazyInitLambda(ABC):
 
     # Other ssm params can be accessed with this method, uses relative name e.g.
     # use "/lambda/layers/utils/arn", instead of "/sec-an/dev/lambda/layers/utils/arn"
-    def get_ssm_param(self, relative_name, use_source_stage):
-        if not relative_name.startswith("/"):
-            relative_name = f"/{relative_name}"
-        return self.event["ssm_params"][
-            f"{self._ssm_source_stage_prefix if use_source_stage else self._ssm_stage_prefix}{relative_name}"
-        ]
+    def get_ssm_param(self, full_name):
+        return self.event["ssm_params"][full_name]
 
     def invoke(self, event, context):
         self.context = context
