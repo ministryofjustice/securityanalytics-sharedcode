@@ -6,6 +6,7 @@ from asyncio import get_running_loop
 from lambda_templates.lazy_initialising_lambda import LazyInitLambda
 from test_utils.test_utils import coroutine_of
 
+
 @pytest.mark.unit
 def test_ssm_params():
     called = False
@@ -70,6 +71,7 @@ def test_async_decorator():
 @pytest.mark.unit
 def test_async_decorator_on_class():
     hit = False
+
     class Foo:
         @patch.dict(os.environ, {"USE_XRAY": "0"})
         @lambda_decorators.async_handler()
